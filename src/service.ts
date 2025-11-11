@@ -47,7 +47,6 @@ export async function IAGeneral(name: string, stats: Stats): Promise<[boolean, s
         - Energía: ${stats.energy}% (${getStatCondition(stats.energy)})
         - Vejiga: ${stats.bladder}% (${getStatCondition(stats.bladder, true)})
         - Higiene: ${stats.hygiene}% (${getStatCondition(stats.hygiene)})
-        - ¿Está durmiendo?: ${stats.isSleeping ? 'Sí' : 'No'}
 
         IMPORTANTE: Valores altos (80-100%) son BUENOS excepto para vejiga donde son MALOS.
         `;
@@ -75,9 +74,6 @@ export async function IAGeneral(name: string, stats: Stats): Promise<[boolean, s
                 - "Me siento sucio, necesito un baño"`,
         },
     ];
-
-    console.log(context);
-    
 
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",

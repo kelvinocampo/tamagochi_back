@@ -5,5 +5,4 @@ export interface Stats {
     energy: number;
     bladder: number;
     hygiene: number;
-    isSleeping: boolean
 }
