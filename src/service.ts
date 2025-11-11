@@ -21,37 +21,63 @@ export async function generalService(name: string, stats: Stats) {
     return result;
 }
 
+function getStatCondition(value: number, isInverted: boolean = false): string {
+    if (isInverted) {
+        if (value >= 80) return "crítico";
+        if (value >= 60) return "alto";
+        if (value >= 30) return "moderado";
+        return "bien";
+    } else {
+        if (value >= 80) return "excelente";
+        if (value >= 60) return "bien";
+        if (value >= 30) return "bajo";
+        return "crítico";
+    }
+}
+
 export async function IAGeneral(name: string, stats: Stats): Promise<[boolean, string]> {
-    const status = true
+    const status = true;
+
+    // Convertir estadísticas a descripciones cualitativas
     const statsDescription = `
-        **Estado actual de ${name}:**
-        - Hambre: ${stats.hunger}
-        - Felicidad: ${stats.happiness}
-        - Salud: ${stats.health}
-        - Energía: ${stats.energy}
-        - Vejiga: ${stats.bladder}
-        - Higiene: ${stats.hygiene}
-        - Durmiendo: ${stats.isSleeping ? 'Sí' : 'No'}
-    `;
+        Estado actual de ${name}:
+        - Hambre: ${stats.hunger}% (${getStatCondition(stats.hunger)})
+        - Felicidad: ${stats.happiness}% (${getStatCondition(stats.happiness)})
+        - Salud: ${stats.health}% (${getStatCondition(stats.health)})
+        - Energía: ${stats.energy}% (${getStatCondition(stats.energy)})
+        - Vejiga: ${stats.bladder}% (${getStatCondition(stats.bladder, true)})
+        - Higiene: ${stats.hygiene}% (${getStatCondition(stats.hygiene)})
+        - ¿Está durmiendo?: ${stats.isSleeping ? 'Sí' : 'No'}
+
+        IMPORTANTE: Valores altos (80-100%) son BUENOS excepto para vejiga donde son MALOS.
+        `;
+
     const context: Part[] = [
         {
-            text: `Responde en menos de 10 palabras según tu estado actual.
-           Las estadísticas van de 0% (peor) a 100% (mejor), 
-           excepto la vejiga: 0% es mejor (vacía) y 100% es peor (llena).
-           No incluyas emojis ni formato Markdown como \\n o similares.
-           No menciones valores numéricos en tu respuesta.`,
-        },
-        {
-            text: `Eres una mascota dinosaurio amigable y tierno. Tu nombre es ${name}. 
-               Comenta sobre tu estado o sobre alguna de tus estadísticas. 
-               Mantén el mensaje breve, corto y divertido.`,
+            text: `Eres ${name}, un dinosaurio mascota tierno y amigable. Basándote en tu estado actual, responde en primera persona cómo te sientes y sugiere UNA acción específica que tu dueño debería hacer contigo.`,
         },
         {
             text: statsDescription,
         },
-    ];
-    console.log(context);
+        {
+            text: `Reglas para tu respuesta:
+                1. Máximo 12 palabras
+                2. Habla en primera persona ("Tengo hambre", "Necesito...")
+                3. NO uses emojis, ni formato Markdown, ni saltos de línea
+                4. NO menciones números ni porcentajes
+                5. Sugiere solo UNA acción: dormir, ir al baño, bañarme, jugar, comer o curarme
+                6. Sé natural y divertido
 
+                Ejemplo de respuestas correctas:
+                - "Tengo mucha hambre, dame algo de comer por favor"
+                - "Necesito urgente ir al baño, ayúdame"
+                - "Estoy muy cansado, quiero dormir un rato"
+                - "Me siento sucio, necesito un baño"`,
+        },
+    ];
+
+    console.log(context);
+    
 
     const response = await ai.models.generateContent({
         model: "gemini-2.5-flash",
